@@ -40,6 +40,7 @@ import dev.jefrien.neurobeat.presentation.screens.player.PlayerScreen
 import dev.jefrien.neurobeat.presentation.screens.search.SearchScreen
 import dev.jefrien.neurobeat.presentation.screens.settings.SettingsScreen
 import dev.jefrien.neurobeat.presentation.viewmodel.LoginViewModel
+import dev.jefrien.neurobeat.presentation.viewmodel.PlayerViewModel
 
 @Composable
 fun AppNavigation(
@@ -55,6 +56,9 @@ fun AppNavigation(
         Screen.Library.route,
         Screen.Settings.route
     )
+
+    // Activity-scoped PlayerViewModel shared across all screens and MiniPlayer
+    val playerViewModel: PlayerViewModel = hiltViewModel()
 
     val loginViewModel: LoginViewModel = hiltViewModel()
     val loginState by loginViewModel.state.collectAsState()
@@ -86,7 +90,8 @@ fun AppNavigation(
             ) {
                 Column {
                     MiniPlayer(
-                        onExpand = { navController.navigate(Screen.Player.route) }
+                        onExpand = { navController.navigate(Screen.Player.route) },
+                        viewModel = playerViewModel
                     )
                     GlassBottomBar(
                         currentRoute = currentRoute ?: Screen.Discover.route,
@@ -140,8 +145,12 @@ fun AppNavigation(
                 )
             }
 
-            composable(Screen.Discover.route) { DiscoverScreen() }
-            composable(Screen.Search.route) { SearchScreen() }
+            composable(Screen.Discover.route) {
+                DiscoverScreen(playerViewModel = playerViewModel)
+            }
+            composable(Screen.Search.route) {
+                SearchScreen(playerViewModel = playerViewModel)
+            }
             composable(Screen.Create.route) { CreateScreen() }
             composable(Screen.Library.route) {
                 LibraryScreen(
@@ -153,13 +162,15 @@ fun AppNavigation(
                     },
                     onPlaylistClick = { playlistId ->
                         navController.navigate(Screen.PlaylistDetail.createRoute(playlistId))
-                    }
+                    },
+                    playerViewModel = playerViewModel
                 )
             }
             composable(Screen.Settings.route) { SettingsScreen() }
             composable(Screen.Player.route) {
                 PlayerScreen(
-                    onDismiss = { navController.popBackStack() }
+                    onDismiss = { navController.popBackStack() },
+                    viewModel = playerViewModel
                 )
             }
 
@@ -173,7 +184,8 @@ fun AppNavigation(
                     onBack = { navController.popBackStack() },
                     onAlbumClick = { albumId ->
                         navController.navigate(Screen.AlbumDetail.createRoute(albumId))
-                    }
+                    },
+                    playerViewModel = playerViewModel
                 )
             }
 
@@ -184,7 +196,8 @@ fun AppNavigation(
                 val albumId = backStackEntry.arguments?.getString("albumId") ?: ""
                 AlbumDetailScreen(
                     albumId = albumId,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    playerViewModel = playerViewModel
                 )
             }
 
@@ -195,7 +208,8 @@ fun AppNavigation(
                 val playlistId = backStackEntry.arguments?.getString("playlistId") ?: ""
                 PlaylistDetailScreen(
                     playlistId = playlistId,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    playerViewModel = playerViewModel
                 )
             }
         }

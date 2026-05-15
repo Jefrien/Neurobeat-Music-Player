@@ -80,7 +80,11 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun playQueue(songs: List<Song>, startIndex: Int = 0) {
-        _state.value = _state.value.copy(queue = songs, currentIndex = startIndex)
+        _state.value = _state.value.copy(
+            queue = songs,
+            currentIndex = startIndex,
+            currentSong = songs.getOrNull(startIndex)
+        )
         exoPlayer.clearMediaItems()
         songs.forEach { song ->
             val streamUrl = urlBuilder.buildStreamUrl(song.id) ?: return@forEach
