@@ -61,6 +61,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LibraryScreen(
+    onArtistClick: (String) -> Unit = {},
+    onAlbumClick: (String) -> Unit = {},
+    onPlaylistClick: (String) -> Unit = {},
     viewModel: LibraryViewModel = hiltViewModel(),
     playerViewModel: PlayerViewModel = hiltViewModel()
 ) {
@@ -129,18 +132,14 @@ fun LibraryScreen(
                     0 -> ArtistsTab(
                         artists = state.artists,
                         isLoading = state.isLoading,
-                        error = state.error
+                        error = state.error,
+                        onArtistClick = onArtistClick
                     )
                     1 -> AlbumsTab(
                         albums = state.albums,
                         isLoading = state.isLoading,
                         error = state.error,
-                        onAlbumClick = { album ->
-                            val songs = state.albumSongs[album.id] ?: emptyList()
-                            if (songs.isNotEmpty()) {
-                                playerViewModel.playQueue(songs)
-                            }
-                        }
+                        onAlbumClick = onAlbumClick
                     )
                     2 -> SongsTab(
                         songs = state.songs,
@@ -154,7 +153,8 @@ fun LibraryScreen(
                     3 -> PlaylistsTab(
                         playlists = state.playlists,
                         isLoading = state.isLoading,
-                        error = state.error
+                        error = state.error,
+                        onPlaylistClick = onPlaylistClick
                     )
                 }
             }
@@ -165,7 +165,12 @@ fun LibraryScreen(
 private data class TabItem(val title: String, val icon: ImageVector)
 
 @Composable
-private fun ArtistsTab(artists: List<Artist>, isLoading: Boolean, error: String?) {
+private fun ArtistsTab(
+    artists: List<Artist>,
+    isLoading: Boolean,
+    error: String?,
+    onArtistClick: (String) -> Unit
+) {
     val colors = LocalAppColors.current
     when {
         isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -183,6 +188,7 @@ private fun ArtistsTab(artists: List<Artist>, isLoading: Boolean, error: String?
                     modifier = Modifier
                         .fillMaxWidth()
                         .glassCard(shape = RoundedCornerShape(12.dp), backgroundAlpha = 0.06f)
+                        .clickable { onArtistClick(artist.id) }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -217,7 +223,7 @@ private fun AlbumsTab(
     albums: List<Album>,
     isLoading: Boolean,
     error: String?,
-    onAlbumClick: (Album) -> Unit
+    onAlbumClick: (String) -> Unit
 ) {
     val colors = LocalAppColors.current
     when {
@@ -235,7 +241,7 @@ private fun AlbumsTab(
         ) {
             items(albums) { album ->
                 Column(
-                    modifier = Modifier.clickable { onAlbumClick(album) }
+                    modifier = Modifier.clickable { onAlbumClick(album.id) }
                 ) {
                     CoverArtImage(
                         coverArtId = album.coverArtId,
@@ -323,7 +329,12 @@ private fun SongsTab(
 }
 
 @Composable
-private fun PlaylistsTab(playlists: List<Playlist>, isLoading: Boolean, error: String?) {
+private fun PlaylistsTab(
+    playlists: List<Playlist>,
+    isLoading: Boolean,
+    error: String?,
+    onPlaylistClick: (String) -> Unit
+) {
     val colors = LocalAppColors.current
     when {
         isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -341,6 +352,7 @@ private fun PlaylistsTab(playlists: List<Playlist>, isLoading: Boolean, error: S
                     modifier = Modifier
                         .fillMaxWidth()
                         .glassCard(shape = RoundedCornerShape(12.dp), backgroundAlpha = 0.06f)
+                        .clickable { onPlaylistClick(playlist.id) }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

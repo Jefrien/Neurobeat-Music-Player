@@ -38,14 +38,16 @@ fun AlbumDto.toDomain(): Album = Album(
     genre = genre,
     isStarred = starred != null,
     rating = rating,
-    created = created?.let { parseDate(it) }
+    created = created?.let { parseDate(it) },
+    songs = song?.map { it.toDomain() } ?: emptyList()
 )
 
 fun ArtistDto.toDomain(): Artist = Artist(
     id = id,
     name = name,
     coverArtId = coverArt,
-    albumCount = albumCount ?: 0
+    albumCount = albumCount ?: 0,
+    albums = album?.map { it.toDomain() } ?: emptyList()
 )
 
 fun GenreDto.toDomain(): Genre = Genre(

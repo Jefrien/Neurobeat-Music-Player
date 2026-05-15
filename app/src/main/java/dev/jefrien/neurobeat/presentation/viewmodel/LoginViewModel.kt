@@ -8,6 +8,7 @@ import dev.jefrien.neurobeat.data.remote.api.SubsonicAuthInterceptor
 import dev.jefrien.neurobeat.domain.repository.SubsonicRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +27,31 @@ class LoginViewModel @Inject constructor(
 
     private val _state = MutableStateFlow<LoginState>(LoginState.Idle)
     val state: StateFlow<LoginState> = _state
+
+    fun checkLoginStatus() {
+        viewModelScope.launch {
+            val isLoggedIn = settingsDataStore.isLoggedIn.first()
+            if (isLoggedIn) {
+                // Verify credentials still work with a ping
+                val result = repository.ping()
+                result.fold(
+                    onSuccess = { isOk ->
+                        if (isOk) {
+                            _state.value = LoginState.Success
+                        } else {
+                            settingsDataStore.clearCredentials()
+                            _state.value = LoginState.Idle
+                        }
+                    },
+                    onFailure = {
+                        // Offline or server unreachable, but we have credentials
+                        // Still allow access (offline mode)
+                        _state.value = LoginState.Success
+                    }
+                )
+            }
+        }
+    }
 
     fun login(serverUrl: String, username: String, password: String) {
         viewModelScope.launch {

@@ -13,5 +13,6 @@ data class Album(
     val isStarred: Boolean = false,
     val rating: Int? = null,
     val created: Long? = null,
-    val isAvailableOffline: Boolean = false
+    val isAvailableOffline: Boolean = false,
+    val songs: List<Song> = emptyList()
 )

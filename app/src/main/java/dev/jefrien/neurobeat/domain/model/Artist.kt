@@ -7,5 +7,6 @@ data class Artist(
     val albumCount: Int = 0,
     val songCount: Int = 0,
     val isStarred: Boolean = false,
-    val isAvailableOffline: Boolean = false
+    val isAvailableOffline: Boolean = false,
+    val albums: List<Album> = emptyList()
 )
